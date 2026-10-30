@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>機械加工計算機 v1.0（計算機 v13）</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="加工計算機">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f5f5f5;color:#222}
+header{padding:16px 14px 10px;background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:2}
+h1{font-size:20px;margin:0}.wrap{max-width:600px;margin:auto;padding:12px}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+button,select,input{font:inherit}button{min-height:48px;border:1px solid #bbb;border-radius:10px;background:#fff;padding:8px 10px}
+button.active{font-weight:700;background:#e9eef5}input,select{width:100%;min-height:48px;border:1px solid #bbb;border-radius:9px;padding:8px 10px;background:#fff}
+.panel{background:#fff;border:1px solid #ddd;border-radius:12px;padding:16px;margin-bottom:12px}
+h2{font-size:18px;margin:0 0 14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:14px;color:#555;margin-bottom:5px}.calc{width:100%;margin-top:14px;background:#e9eef5;font-weight:700}
+.result{margin-top:14px;padding:13px;border-radius:9px;background:#f0f3f6;font-size:20px;font-weight:700;line-height:1.55;overflow-wrap:anywhere}
+.note{font-size:13px;color:#666;margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+th,td{border-bottom:1px solid #ddd;padding:7px 4px;text-align:right}th:first-child,td:first-child{text-align:center}
+.hidden{display:none}@media(max-width:420px){.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}}
+.compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}.compare-panel{min-width:0;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px}.compare-heading{text-align:center;font-size:17px;margin-bottom:5px}.compare-table{margin:0;font-size:15px}.compare-table th{text-align:left;width:24px}.compare-table td{text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.compare-table small{display:block;font-size:11px;font-weight:400;color:#555}@media(max-width:380px){.compare-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>機械加工計算機 <span style="font-size:12px;font-weight:400">v1.0</span></h1></div></header>
+<main class="wrap">
+<div class="tabs">
+<button data-tab="recpol" class="active">REC / POL</button><button data-tab="trig">三角関数</button>
+<button data-tab="drill">ドリル先端高さ</button><button data-tab="pcd">PCD計算</button>
+<button data-tab="speed">切削速度 Vc・回転数 S</button>
+<button data-tab="sf">送り速度 F の計算</button><button data-tab="adjust">S・F連動調整</button>
+<button data-tab="pitch">等ピッチ穴位置</button>
+</div>
+
+<section id="recpol" class="panel">
+<h2>REC / POL</h2>
+<div class="grid"><div><label>変換</label><select id="rp_mode"><option value="rp">R・θ → X・Y</option><option value="pr">X・Y → R・θ</option></select></div><div></div></div>
+<div class="grid" style="margin-top:12px"><div><label id="rp_l1">R (mm)</label><input id="rp_v1" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="100" step="0.001"></div><div><label id="rp_l2">θ (°)</label><input id="rp_v2" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="30" step="0.001"></div></div>
+<div class="note" style="margin-top:12px">原点 O から見た位置をXY座標で表示します（図は位置関係の説明用）。</div>
+<div style="border:1px solid #bbb;border-radius:9px;padding:8px;margin-top:8px;background:#fff">
+<svg id="rp_graph" viewBox="0 0 320 290" role="img" aria-label="XY座標グラフ。原点から計算した位置までの半径Rと角度を表示" style="display:block;width:100%;max-width:420px;margin:auto;color:#222">
+<defs><marker id="rp_arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="currentColor"/></marker></defs>
+<path d="M20 145H300 M160 270V20" stroke="currentColor" stroke-width="1.6" fill="none" marker-end="url(#rp_arrow)"/>
+<path d="M40 145H280 M160 250V40" stroke="currentColor" opacity=".14" stroke-dasharray="3 5"/>
+<text x="300" y="137" font-size="13" text-anchor="end" fill="currentColor">+X</text><text x="168" y="23" font-size="13" fill="currentColor">+Y</text><text x="148" y="161" font-size="12" fill="currentColor">O</text>
+<path id="rp_xline" d="M160 145H260" stroke="currentColor" stroke-dasharray="5 4" opacity=".6" fill="none"/>
+<path id="rp_yline" d="M260 145V87" stroke="currentColor" stroke-dasharray="5 4" opacity=".6" fill="none"/>
+<path id="rp_radius" d="M160 145L260 87" stroke="#245a94" stroke-width="2.6" fill="none"/>
+<circle id="rp_dot" cx="260" cy="87" r="4.5" fill="#245a94" stroke="currentColor" stroke-width=".8"/>
+<text id="rp_pointlabel" x="265" y="78" font-size="12" fill="currentColor">P (X,Y)</text>
+<text id="rp_rlabel" x="207" y="104" font-size="12" fill="#245a94">R</text>
+<text id="rp_anglelabel" x="192" y="137" font-size="12" fill="currentColor">θ 30°</text>
+</svg><div id="rp_graphtext" class="note" style="text-align:center;color:#222">P (86.603, 50) mm ／ R 100 mm ／ θ 30°</div></div>
+<button class="calc" id="rp_calc">計算</button><div class="result" id="rp_out">X = 86.603 mm　Y = 50.000 mm</div>
+<div class="note">角度は +X軸から反時計回り。度（°）で入力。</div>
+</section>
+
+<section id="trig" class="panel hidden">
+<h2>三角関数</h2>
+<div class="grid"><div><label>関数</label><select id="tr_fn"><option value="sin">sin</option><option value="cos">cos</option><option value="tan">tan</option><option value="asin">sin⁻¹</option><option value="acos">cos⁻¹</option><option value="atan">tan⁻¹</option></select></div><div><label>数値</label><input id="tr_v" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="30" step="0.000001"></div></div>
+<button class="calc" id="tr_calc">計算</button><div class="result" id="tr_out">結果：0.500000</div>
+<div class="note">sin/cos/tanは角度を度で入力。逆三角関数は度で表示。</div>
+<div class="panel" style="margin-top:18px;background:#fafafa"><h2>直角三角形・辺の計算</h2>
+<div class="note">角度はX（水平）と斜辺の間。分かっている辺を選択してください。</div>
+<svg viewBox="0 0 340 190" role="img" aria-label="直角三角形。左下が角度、底辺X、右側の縦辺Y、斜めの辺が斜辺" style="width:100%;max-width:420px;display:block;margin:8px auto;color:#222">
+<path d="M28 153 L275 153 L275 30 Z" fill="#edf1f5" stroke="currentColor" stroke-width="2.5"/><path d="M260 153 V138 H275" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M70 153 A42 42 0 0 0 65.6 134.3" fill="none" stroke="currentColor"/><g fill="currentColor" font-size="13"><text x="77" y="145" id="tri_angle_label">30°</text><text x="137" y="176" id="tri_x_label">X = ?</text><text x="282" y="94" id="tri_y_label">Y = 67.5</text><text x="100" y="73" id="tri_h_label">斜辺 = ?</text></g></svg>
+<div class="grid"><div><label for="tri_a">角度 (°)</label><input id="tri_a" type="text" inputmode="text" value="30"></div><div><label for="tri_side">分かっている辺</label><select id="tri_side"><option value="y">Y（高さ）</option><option value="x">X（水平）</option><option value="h">斜辺</option></select></div><div><label for="tri_v">辺の長さ (mm)</label><input id="tri_v" type="text" inputmode="text" value="67.5"></div></div>
+<button class="calc" id="tri_calc">残りの2辺を計算</button><div class="result" id="tri_out" aria-live="polite">X = 116.913 mm　Y = 67.5 mm　斜辺 = 135 mm</div><div class="note">図は説明用で、実寸比率ではありません。入力は四則演算にも対応します。</div></div>
+</section>
+
+<section id="drill" class="panel hidden">
+<h2>ドリル先端高さ</h2>
+<div class="grid"><div><label>ドリル径 φ (mm)</label><input id="dr_d" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="26.5" step="0.01"></div><div><label>先端角 (°)</label><input id="dr_a" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="118" step="0.1"></div></div>
+<div class="note" style="margin-top:14px">下図の赤い両矢印部分（ドリルの外周角部から先端までの軸方向の長さ）を計算します。</div>
+<div style="border:1px solid #ccc;border-radius:10px;padding:8px;margin-top:8px;text-align:center;background:#fafafa">
+<svg viewBox="0 0 340 235" role="img" aria-label="ドリル先端の模式図。先端角と直径、先端高さhの位置を示す" style="width:100%;max-width:380px;height:auto;color:#222">
+<defs><marker id="dr_arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#b42318"/></marker></defs>
+<path d="M105 25 H235 V92 L170 177 L105 92 Z" fill="#dce6ef" stroke="#303c49" stroke-width="2.2"/>
+<path d="M170 17 V190" stroke="#777" stroke-dasharray="5 4" stroke-width="1"/>
+<path d="M105 92 H235" stroke="#555" stroke-dasharray="4 3"/>
+<path d="M105 82 V65 M235 82 V65 M105 70 H235" stroke="#333" stroke-width="1.2"/>
+<text x="170" y="62" text-anchor="middle" font-size="13" fill="currentColor">ドリル径 φ</text>
+<path d="M170 147 Q155 143 151 132 M170 147 Q185 143 189 132" fill="none" stroke="#555"/>
+<text x="170" y="125" text-anchor="middle" font-size="12" fill="currentColor">先端角</text>
+<path d="M248 92 H285 M180 177 H285" stroke="#b42318" stroke-width="1" stroke-dasharray="3 3"/>
+<path d="M272 96 V173" stroke="#b42318" stroke-width="2.5" marker-start="url(#dr_arrow)" marker-end="url(#dr_arrow)"/>
+<text x="282" y="130" font-size="13" font-weight="bold" fill="#b42318">h</text>
+<text x="282" y="146" font-size="11" fill="#b42318">先端高さ</text>
+<text x="170" y="214" text-anchor="middle" font-size="12" fill="currentColor">模式図（寸法比率は実際と異なります）</text>
+</svg></div>
+<button class="calc" id="dr_calc">計算</button><div class="result" id="dr_out">先端高さ：約 7.63 mm</div>
+<div class="note">先端高さ = (径÷2) ÷ tan(先端角÷2)</div>
+</section>
+
+<section id="pcd" class="panel hidden">
+<h2>PCD穴位置計算</h2>
+<div class="grid"><div><label>PCD (mm)</label><input id="pcd_d" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="1300" step="0.01"></div><div><label>穴数</label><input id="pcd_n" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="8" min="1" step="1"></div><div><label>開始角度 (°)</label><input id="pcd_start" type="text" inputmode="text" autocomplete="off" spellcheck="false" value="0" step="0.1"></div><div><label>方向</label><select id="pcd_dir"><option value="1">反時計回り</option><option value="-1">時計回り</option></select></div></div>
+<button class="calc" id="pcd_calc">座標を計算</button>
+<div style="margin-top:14px;border:1px solid #ddd;border-radius:10px;padding:8px;background:#fff">
+<svg id="pcd_graph" viewBox="0 0 340 340" style="width:100%;max-width:400px;display:block;margin:auto" role="img" aria-label="PCDの穴位置とXY座標を示す図">
+<defs><marker id="pcd_arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0 0L6 3L0 6" fill="none" stroke="currentColor"/></marker></defs>
+<line x1="18" y1="170" x2="322" y2="170" stroke="currentColor" stroke-width="1.2" marker-end="url(#pcd_arrow)"/>
+<line x1="170" y1="322" x2="170" y2="18" stroke="currentColor" stroke-width="1.2" marker-end="url(#pcd_arrow)"/>
+<text x="321" y="160" fill="currentColor" text-anchor="end" font-size="13">+X (0°)</text><text x="181" y="24" fill="currentColor" font-size="13">+Y</text>
+<circle cx="170" cy="170" r="117" fill="none" stroke="currentColor" stroke-dasharray="5 4" stroke-width="1.5"/>
+<circle cx="170" cy="170" r="2.5" fill="currentColor"/><text x="177" y="185" fill="currentColor" font-size="11">O (0,0)</text>
+<g id="pcd_points"></g><g id="pcd_radius"></g>
+</svg><div class="note" id="pcd_graphnote" style="text-align:center">破線の円がPCD。穴位置は入力値に応じて変わります。</div></div>
+<div id="pcd_out"></div>
+<div class="note">中心をX=0,Y=0、+X軸を0°とします。</div>
+</section>
+
+<section id="speed" class="panel hidden">
+<h2>切削速度 Vc・回転数 S の換算</h2>
+<label for="sp_mode">求めたい項目を選択</label>
+<select id="sp_mode"><option value="s">切削速度 Vc から回転数 S を求める</option><option value="vc">回転数 S から切削速度 Vc を逆算する</option></select>
+<div class="grid" style="margin-top:12px"><div><label for="sp_d">工具径 φ (mm)</label><input id="sp_d" type="text" inputmode="text" value="26.5"></div><div><label for="sp_value" id="sp_label">切削速度 Vc (m/min)</label><input id="sp_value" type="text" inputmode="text" value="20"></div></div>
+<div class="note" id="sp_formula">S = 1000 × Vc ÷ (π × φ)</div>
+<button class="calc" id="sp_calc">計算</button><div class="result" id="sp_out" aria-live="polite">S = 240.2 rpm</div>
+<div class="note">工具径はmm、切削速度はm/min、回転数はrpmで入力。切削速度は工具・材料に適した条件を別途確認してください。</div>
+</section>
+
+<section id="sf" class="panel hidden">
+<h2>送り F 計算（工具別）</h2>
+<label for="sf_mode">工具の種類を先に選択</label><select id="sf_mode"><option value="drill">ドリル（1回転送り）</option><option value="mill">カッタ・エンドミル（1刃送り）</option><option value="tap">タップ（ピッチ送り・1条ねじ）</option></select>
+<div class="grid" style="margin-top:12px"><div><label for="sf_s">回転数 S (rpm)</label><input id="sf_s" type="text" inputmode="text" value="300"></div>
+<div id="sf_drill"><label for="sf_f">1回転送り f (mm/rev)</label><input id="sf_f" type="text" inputmode="text" value="0.10"></div>
+<div id="sf_mill" class="hidden"><label for="sf_z">刃数 z（実際に切削する刃数）</label><input id="sf_z" type="text" inputmode="text" value="2"><label for="sf_fz" style="margin-top:8px">1刃送り fz (mm/tooth)</label><input id="sf_fz" type="text" inputmode="text" value="0.10"></div>
+<div id="sf_tap" class="hidden"><label for="sf_p">ねじピッチ P (mm)</label><input id="sf_p" type="text" inputmode="text" value="3.5"></div></div>
+<div class="note" id="sf_help">ドリルは刃数を掛けません。工具条件表の「mm/rev」を入力してください。F = S × f</div>
+<button class="calc" id="sf_calc">送り F を計算</button><div class="result" id="sf_out" aria-live="polite">F = 30 mm/min</div>
+<div class="note">※工具条件表に記載された送りの単位を確認してください。タップは通常の1条ねじの理論送りです。機械のタップサイクル・同期条件は別途確認してください。</div>
+</section>
+<div class="note" style="padding:0 5px 18px">数値欄は四則演算に対応：1331/2、100+25、(100+25)/2 など。掛け算は *、割り算は / を使用できます。</div>
+<section id="adjust" class="panel hidden">
+<h2>S・F連動調整（加工条件の微調整）</h2>
+<div class="grid"><div><label>現在のS (rpm)</label><input id="ad_s" type="text" inputmode="text" value="300"></div><div><label>現在のF (mm/min)</label><input id="ad_f" type="text" inputmode="text" value="60"></div></div>
+<div class="note">現在の1回転送り f = F ÷ S。まずこの値を基準にします。</div>
+<label style="margin-top:12px">調整モード</label><select id="ad_mode"><option value="keep">1回転送り f を維持（初期設定）</option><option value="free">1回転送り f も変更する</option></select>
+<div id="ad_keep"><label style="margin-top:12px">変更する項目</label><select id="ad_axis"><option value="s">Sを変更 → Fを自動計算</option><option value="f">Fを変更 → Sを自動計算</option></select><label style="margin-top:12px">指定方法</label><select id="ad_kind"><option value="target">目標値を直接入力</option><option value="percent">増減率（基準0％）を入力</option></select><label id="ad_value_label" style="margin-top:12px">変更後のS (rpm)</label><input id="ad_value" type="text" inputmode="text" value="350"><div class="note">現在値を0％として表示。+10で10％増、-20で20％減。</div></div>
+<div id="ad_free" class="hidden"><div class="grid" style="margin-top:12px"><div><label>変更後S (rpm)</label><input id="ad_new_s" type="text" inputmode="text" value="350"></div><div><label>変更後F (mm/min)</label><input id="ad_new_f" type="text" inputmode="text" value="60"></div></div><div class="note">S・Fをそれぞれ指定。現在と変更後のfを比較します。</div></div>
+<div class="grid" style="margin-top:12px"><div><label>工具の種類（補助表示）</label><select id="ad_tool"><option value="other">ドリル・一般（mm/rev）</option><option value="mill">カッタ・エンドミル</option></select></div><div id="ad_teeth_box" class="hidden"><label>実際に切削する刃数 z</label><input id="ad_teeth" type="text" inputmode="text" value="2"></div></div>
+<button class="calc" id="ad_calc">変更後の条件を計算</button><div class="result" id="ad_out" aria-live="polite">現在の条件を入力して計算してください</div><div class="note">理論値です。機械・工具・材料の許容範囲、送り・回転数の上限を確認してください。タップの同期送り調整には使用しないでください。</div>
+</section>
+<section id="pitch" class="panel hidden">
+<h2>等ピッチ穴位置計算（直線配置）</h2>
+<div class="note">開始穴と終了穴の中心座標、穴数を入力します。両端の穴を含めて等間隔に配置します。</div>
+<div class="grid" style="margin-top:12px">
+<div><label for="ep_x1">開始穴 X (mm)</label><input id="ep_x1" type="text" inputmode="text" value="0"></div>
+<div><label for="ep_y1">開始穴 Y (mm)</label><input id="ep_y1" type="text" inputmode="text" value="0"></div>
+<div><label for="ep_x2">終了穴 X (mm)</label><input id="ep_x2" type="text" inputmode="text" value="400"></div>
+<div><label for="ep_y2">終了穴 Y (mm)</label><input id="ep_y2" type="text" inputmode="text" value="0"></div>
+<div><label for="ep_n">穴数（両端を含む）</label><input id="ep_n" type="text" inputmode="text" value="5"></div></div>
+<button class="calc" id="ep_calc">穴位置を計算</button>
+<div style="margin-top:14px;border:1px solid #ccc;border-radius:10px;padding:8px;background:#fff">
+<svg viewBox="0 0 340 180" role="img" aria-label="開始穴から終了穴までを等間隔に配置する模式図" style="width:100%;max-width:420px;display:block;margin:auto;color:#222">
+<line x1="25" y1="90" x2="315" y2="90" stroke="currentColor" stroke-width="2"/>
+<g fill="#fff" stroke="currentColor" stroke-width="2"><circle cx="25" cy="90" r="6"/><circle cx="97.5" cy="90" r="6"/><circle cx="170" cy="90" r="6"/><circle cx="242.5" cy="90" r="6"/><circle cx="315" cy="90" r="6"/></g>
+<g fill="currentColor" font-size="12" text-anchor="middle"><text x="25" y="72">No.1</text><text x="315" y="72">最終穴</text><text x="170" y="120">等間隔（模式図）</text><text x="170" y="149">X・Yの両方向に対応</text></g></svg></div>
+<div class="result" id="ep_summary" aria-live="polite" style="font-size:16px">数値を入力して計算してください</div><div id="ep_out" style="overflow-x:auto"></div>
+<div class="note">ピッチ＝始点から終点までの距離÷（穴数－1）。座標は開始穴をNo.1として表示します。図は実際の穴数・方向を表すものではありません。</div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+// 四則演算と括弧を安全に解析（evalは使用しない）
+function expression(source){
+ let s=String(source).normalize('NFKC').replace(/\s/g,'').replace(/[×xX]/g,'*').replace(/[÷]/g,'/');
+ if(!s || s.length>120)throw Error('入力を確認してください');
+ let i=0;
+ function primary(){
+  if(s[i]==='+'){i++;return primary()}
+  if(s[i]==='-'){i++;return -primary()}
+  if(s[i]==='('){i++;let v=add();if(s[i]!==')')throw Error('括弧を確認してください');i++;return v}
+  let m=/^(?:\d+(?:\.\d*)?|\.\d+)/.exec(s.slice(i));
+  if(!m)throw Error('式を確認してください');i+=m[0].length;return Number(m[0]);
+ }
+ function mul(){let v=primary();while(s[i]==='*'||s[i]==='/'){let op=s[i++],b=primary();if(op==='/'&&b===0)throw Error('0では割れません');v=op==='*'?v*b:v/b}return v}
+ function add(){let v=mul();while(s[i]==='+'||s[i]==='-'){let op=s[i++],b=mul();v=op==='+'?v+b:v-b}return v}
+ let v=add();if(i!==s.length||!Number.isFinite(v))throw Error('式を確認してください');return v;
+}
+const N=s=>{let e=$(s);return e.tagName==='SELECT'?Number(e.value):expression(e.value)};
+const fmt=(x,d=3)=>Number(x).toFixed(d).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'');
+$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('section').forEach(x=>x.classList.add('hidden'));$('#'+b.dataset.tab).classList.remove('hidden');});
+function rpDraw(x,y){
+ const r=Math.hypot(x,y),theta=Math.atan2(y,x)*180/Math.PI,scale=r?104/r:0;
+ const px=160+x*scale,py=145-y*scale;
+ const attr=(id,key,val)=>$(id).setAttribute(key,String(val));
+ attr('#rp_xline','d',`M160 145H${px}`);attr('#rp_yline','d',`M${px} 145V${py}`);
+ attr('#rp_radius','d',`M160 145L${px} ${py}`);attr('#rp_dot','cx',px);attr('#rp_dot','cy',py);
+ attr('#rp_pointlabel','x',px>235?px-5:px+6);attr('#rp_pointlabel','y',py<42?py+18:py-9);
+ attr('#rp_pointlabel','text-anchor',px>235?'end':'start');$('#rp_pointlabel').textContent='P (X,Y)';
+ attr('#rp_rlabel','x',(160+px)/2+5);attr('#rp_rlabel','y',(145+py)/2-7);
+ attr('#rp_anglelabel','x',191);attr('#rp_anglelabel','y',135);$('#rp_anglelabel').textContent=`θ ${fmt(theta,2)}°`;
+ $('#rp_graphtext').textContent=`P (${fmt(x)}, ${fmt(y)}) mm ／ R ${fmt(r)} mm ／ θ ${fmt(theta,2)}°`;
+}
+$('#rp_mode').onchange=()=>{let p=$('#rp_mode').value==='rp';$('#rp_l1').textContent=p?'R (mm)':'X (mm)';$('#rp_l2').textContent=p?'θ (°)':'Y (mm)';$('#rp_out').textContent='数値を入力して計算してください';$('#rp_graphtext').textContent='「計算」を押すと位置を表示します'};
+$('#rp_calc').onclick=()=>{let a=N('#rp_v1'),b=N('#rp_v2');if($('#rp_mode').value==='rp'){let t=b*Math.PI/180,x=a*Math.cos(t),y=a*Math.sin(t);$('#rp_out').textContent=`X = ${fmt(x)} mm　Y = ${fmt(y)} mm`;rpDraw(x,y)}else{$('#rp_out').textContent=`R = ${fmt(Math.hypot(a,b))} mm　θ = ${fmt(Math.atan2(b,a)*180/Math.PI)}°`;rpDraw(a,b)}};
+rpDraw(100*Math.cos(Math.PI/6),100*Math.sin(Math.PI/6));
+$('#tr_calc').onclick=()=>{let f=$('#tr_fn').value,v=N('#tr_v'),r;if(f==='sin')r=Math.sin(v*Math.PI/180);if(f==='cos')r=Math.cos(v*Math.PI/180);if(f==='tan')r=Math.tan(v*Math.PI/180);if(f==='asin'||f==='acos'||f==='atan'){if((f!=='atan')&&(v<-1||v>1))return $('#tr_out').textContent='この値では計算できません';r=(f==='asin'?Math.asin(v):f==='acos'?Math.acos(v):Math.atan(v))*180/Math.PI;return $('#tr_out').textContent=`結果：${fmt(r,6)}°`}$('#tr_out').textContent=`結果：${fmt(r,6)}`};
+$('#dr_calc').onclick=()=>{let d=N('#dr_d'),a=N('#dr_a');if(!(d>0)||!(a>0)||a>=180)return $('#dr_out').textContent='入力を確認してください';$('#dr_out').textContent=`先端高さ：約 ${fmt((d/2)/Math.tan(a*Math.PI/360),3)} mm`};
+$('#pcd_calc').onclick=()=>{let d=N('#pcd_d'),n=Math.floor(N('#pcd_n')),st=N('#pcd_start'),dir=N('#pcd_dir');if(!(d>0)||n<1)return $('#pcd_out').textContent='入力を確認してください';let r=d/2,h='<table><thead><tr><th>No.</th><th>角度</th><th>X</th><th>Y</th></tr></thead><tbody>',dots='',radius='';for(let i=0;i<n;i++){let a=st+dir*i*360/n,t=a*Math.PI/180,x=r*Math.cos(t),y=r*Math.sin(t),px=170+117*Math.cos(t),py=170-117*Math.sin(t);h+=`<tr><td>${i+1}</td><td>${fmt(a)}°</td><td>${fmt(x)}</td><td>${fmt(y)}</td></tr>`;dots+=`<circle cx="${px}" cy="${py}" r="${i===0?5:3.5}" fill="${i===0?'#b42318':'#23649b'}"/>`;if(n<=16)dots+=`<text x="${170+134*Math.cos(t)}" y="${170-134*Math.sin(t)+4}" font-size="11" text-anchor="middle" fill="currentColor">${i+1}</text>`;if(i===0)radius=`<line x1="170" y1="170" x2="${px}" y2="${py}" stroke="#b42318" stroke-width="2"/><text x="${170+65*Math.cos(t)}" y="${170-65*Math.sin(t)-7}" font-size="12" fill="#b42318" text-anchor="middle">R=PCD/2</text>`;}$('#pcd_points').innerHTML=dots;$('#pcd_radius').innerHTML=radius;$('#pcd_graphnote').textContent=`PCD φ${fmt(d)} mm ／ ${n}穴 ／ 開始角 ${fmt(st)}° ／ ${dir===1?'反時計回り':'時計回り'}。赤点がNo.1。${n>16?'穴番号は下の表で確認してください。':''}`;$('#pcd_out').innerHTML=h+'</tbody></table>'};
+$('#pcd_calc').click();
+$('#sp_mode').onchange=()=>{let reverse=$('#sp_mode').value==='vc';$('#sp_label').textContent=reverse?'回転数 S (rpm)':'切削速度 Vc (m/min)';$('#sp_value').value=reverse?'240':'20';$('#sp_formula').textContent=reverse?'Vc = π × φ × S ÷ 1000':'S = 1000 × Vc ÷ (π × φ)';$('#sp_out').textContent='数値を入力して計算してください'};
+$('#sp_calc').onclick=()=>{try{let d=N('#sp_d'),v=N('#sp_value');if(!(d>0&&v>0))throw Error('工具径と入力値は0より大きくしてください');$('#sp_out').textContent=$('#sp_mode').value==='vc'?`Vc = ${fmt(Math.PI*d*v/1000,3)} m/min`:`S = ${fmt(1000*v/(Math.PI*d),1)} rpm`;}catch(e){$('#sp_out').textContent=e.message||'入力を確認してください'}};
+$('#sf_mode').onchange=()=>{let m=$('#sf_mode').value;['drill','mill','tap'].forEach(k=>$('#sf_'+k).classList.toggle('hidden',k!==m));$('#sf_help').textContent=m==='drill'?'ドリルは刃数を掛けません。工具条件表の「mm/rev」を入力してください。F = S × f':m==='mill'?'カッタ・エンドミルは「mm/tooth」を入力してください。F = S × z × fz':'通常の1条ねじ：F = S × P。機械のタップサイクル・同期条件は別途確認してください。';$('#sf_out').textContent='数値を入力して計算してください'};
+$('#sf_calc').onclick=()=>{let s=N('#sf_s'),m=$('#sf_mode').value,f;if(!(s>0))throw Error('回転数は0より大きくしてください');if(m==='drill'){let v=N('#sf_f');if(!(v>0))throw Error('1回転送りは0より大きくしてください');f=s*v}else if(m==='mill'){let z=N('#sf_z'),v=N('#sf_fz');if(!Number.isInteger(z)||z<1)throw Error('刃数は1以上の整数で入力してください');if(!(v>0))throw Error('1刃送りは0より大きくしてください');f=s*z*v}else{let p=N('#sf_p');if(!(p>0))throw Error('ピッチは0より大きくしてください');f=s*p}$('#sf_out').textContent=`F = ${fmt(f,3)} mm/min`};
+$('#tri_calc').onclick=()=>{try{let a=N('#tri_a'),v=N('#tri_v'),side=$('#tri_side').value;if(!(a>0&&a<90))throw Error('角度は0°より大きく90°未満で入力してください');if(!(v>0))throw Error('辺の長さは0より大きくしてください');let t=a*Math.PI/180,x,y,h;if(side==='y'){y=v;x=y/Math.tan(t);h=y/Math.sin(t)}else if(side==='x'){x=v;y=x*Math.tan(t);h=x/Math.cos(t)}else{h=v;x=h*Math.cos(t);y=h*Math.sin(t)}$('#tri_out').textContent=`X = ${fmt(x)} mm　Y = ${fmt(y)} mm　斜辺 = ${fmt(h)} mm`;$('#tri_angle_label').textContent=fmt(a)+'°';$('#tri_x_label').textContent='X = '+fmt(x);$('#tri_y_label').textContent='Y = '+fmt(y);$('#tri_h_label').textContent='斜辺 = '+fmt(h)}catch(e){$('#tri_out').textContent=e.message||'入力を確認してください'}};
+// 入力エラーは各計算結果欄に表示する
+[['rp_calc','rp_out'],['tr_calc','tr_out'],['dr_calc','dr_out'],['pcd_calc','pcd_out'],['sf_calc','sf_out']].forEach(([button,out])=>{
+ const b=$('#'+button),original=b.onclick;
+ b.onclick=()=>{try{
+  const panel=b.closest('section');
+  panel.querySelectorAll('input').forEach(e=>{if(button==='sf_calc' && e.closest('#sf_drill,#sf_mill,#sf_tap')?.classList.contains('hidden'))return;expression(e.value)});
+  if(button==='pcd_calc' && (!Number.isInteger(N('#pcd_n')) || N('#pcd_n')>360))throw Error('穴数は1～360の整数で入力してください');
+  original();
+ }catch(e){$('#'+out).textContent=e.message||'入力を確認してください'}};
+});
+
+
+$('#ep_calc').onclick=()=>{try{
+ const x1=N('#ep_x1'),y1=N('#ep_y1'),x2=N('#ep_x2'),y2=N('#ep_y2'),n=N('#ep_n');
+ if(!Number.isInteger(n)||n<2||n>360)throw Error('穴数は2～360の整数で入力してください');
+ const dx=(x2-x1)/(n-1),dy=(y2-y1)/(n-1),pitch=Math.hypot(dx,dy);
+ if(!(pitch>0))throw Error('開始穴と終了穴は異なる位置にしてください');
+ $('#ep_summary').textContent=`穴数：${n}　ピッチ：${fmt(pitch,4)} mm　（ΔX：${fmt(dx,4)} mm／ΔY：${fmt(dy,4)} mm）`;
+ let h='<table><thead><tr><th>No.</th><th>X (mm)</th><th>Y (mm)</th></tr></thead><tbody>';
+ for(let i=0;i<n;i++){let x=i===n-1?x2:x1+i*dx,y=i===n-1?y2:y1+i*dy;h+=`<tr><td>${i+1}</td><td>${fmt(x,4)}</td><td>${fmt(y,4)}</td></tr>`}
+ $('#ep_out').innerHTML=h+'</tbody></table>';
+ }catch(e){$('#ep_summary').textContent=e.message||'入力を確認してください';$('#ep_out').textContent=''}
+};
+$('#ep_calc').click();
+
+$('#ad_mode').onchange=()=>{let keep=$('#ad_mode').value==='keep';$('#ad_keep').classList.toggle('hidden',!keep);$('#ad_free').classList.toggle('hidden',keep)};
+function adLabel(){let pct=$('#ad_kind').value==='percent';$('#ad_value_label').textContent=pct?'増減率（現在値＝0％、減らす場合はマイナス）':($('#ad_axis').value==='s'?'変更後のS (rpm)':'変更後のF (mm/min)');}
+$('#ad_axis').onchange=adLabel;$('#ad_kind').onchange=adLabel;
+$('#ad_tool').onchange=()=>$('#ad_teeth_box').classList.toggle('hidden',$('#ad_tool').value!=='mill');
+$('#ad_calc').onclick=()=>{try{let s=expression($('#ad_s').value),f=expression($('#ad_f').value);if(!(s>0&&f>0))throw Error('現在のSとFは0より大きくしてください');let old=f/s,ns,nf;if($('#ad_mode').value==='keep'){let axis=$('#ad_axis').value,v=expression($('#ad_value').value);let base=axis==='s'?s:f,goal=$('#ad_kind').value==='percent'?base*(1+v/100):v;if(!(goal>0))throw Error('変更後の値は0より大きくしてください');ns=axis==='s'?goal:goal/old;nf=axis==='f'?goal:goal*old;}else{ns=expression($('#ad_new_s').value);nf=expression($('#ad_new_f').value)}if(!(ns>0&&nf>0&&Number.isFinite(ns)&&Number.isFinite(nf)))throw Error('変更後のSとFを確認してください');let now=nf/ns;let z=null;if($('#ad_tool').value==='mill'){z=expression($('#ad_teeth').value);if(!Number.isInteger(z)||z<1)throw Error('刃数は1以上の整数にしてください');}
+const cell=(a,b,unit)=>`<tr><th>${a}</th><td>${fmt(b,5)} <small>${unit}</small></td></tr>`;
+const panel=(heading,sv,fv,feed)=>`<div class="compare-panel"><div class="compare-heading">${heading}</div><table class="compare-table"><tbody>${cell('S',sv,'rpm')}${cell('F',fv,'mm/min')}${cell('f',feed,'mm/rev')}${z===null?'':cell('fz',feed/z,'mm/tooth')}</tbody></table></div>`;
+$('#ad_out').style.whiteSpace='normal';$('#ad_out').innerHTML='<div class="compare-wrap">'+panel('変更前',s,f,old)+panel('変更後',ns,nf,now)+'</div>';}catch(e){$('#ad_out').textContent=e.message||'入力を確認してください';}};
+[['ad_calc','ad_out']].forEach(([button,out])=>{$('#'+button).addEventListener('click',()=>{},false)});
+</script>
+<script>if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script>
+</body>
+</html>
