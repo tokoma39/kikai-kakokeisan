@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>機械加工計算機 v1.0（計算機 v13）</title>
+<title>機械加工計算機 v1.2（日・インドネシア語）</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -26,10 +26,10 @@ label{display:block;font-size:14px;color:#555;margin-bottom:5px}.calc{width:100%
 th,td{border-bottom:1px solid #ddd;padding:7px 4px;text-align:right}th:first-child,td:first-child{text-align:center}
 .hidden{display:none}@media(max-width:420px){.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}}
 .compare-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}.compare-panel{min-width:0;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px}.compare-heading{text-align:center;font-size:17px;margin-bottom:5px}.compare-table{margin:0;font-size:15px}.compare-table th{text-align:left;width:24px}.compare-table td{text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.compare-table small{display:block;font-size:11px;font-weight:400;color:#555}@media(max-width:380px){.compare-wrap{grid-template-columns:1fr}}
-</style>
+.langbar{display:flex;align-items:center;gap:8px;margin-top:10px}.langbar label{margin:0;font-weight:650;color:#222}.langbar select{width:auto;min-width:160px;min-height:42px;margin-left:auto}html[lang="id"] .tabs button{overflow-wrap:anywhere} </style>
 </head>
 <body>
-<header><div class="wrap"><h1>機械加工計算機 <span style="font-size:12px;font-weight:400">v1.0</span></h1></div></header>
+<header><div class="wrap"><h1>機械加工計算機 <span style="font-size:12px;font-weight:400">v1.2</span></h1><div class="langbar"><label for="app_language">言語 / Bahasa</label><select id="app_language" aria-label="Language / Bahasa"><option value="ja">日本語</option><option value="id">Bahasa Indonesia</option></select></div></div></header>
 <main class="wrap">
 <div class="tabs">
 <button data-tab="recpol" class="active">REC / POL</button><button data-tab="trig">三角関数</button>
@@ -249,5 +249,56 @@ $('#ad_out').style.whiteSpace='normal';$('#ad_out').innerHTML='<div class="compa
 [['ad_calc','ad_out']].forEach(([button,out])=>{$('#'+button).addEventListener('click',()=>{},false)});
 </script>
 <script>if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {})); }</script>
+
+<script>
+/* Bilingual display layer. Original calculation functions and formulas are unchanged. */
+(()=>{
+ const dictionary = {"機械加工計算機": "Kalkulator Pemesinan", "三角関数": "Trigonometri", "ドリル先端高さ": "Tinggi Ujung Bor", "PCD計算": "Perhitungan PCD", "切削速度 Vc・回転数 S": "Kecepatan Potong Vc · Putaran S", "送り速度 F の計算": "Perhitungan Laju Pemakanan F", "S・F連動調整": "Penyesuaian S dan F", "等ピッチ穴位置": "Posisi Lubang Berjarak Sama", "変換": "Konversi", "原点 O から見た位置をXY座標で表示します（図は位置関係の説明用）。": "Menampilkan posisi relatif terhadap titik asal O dalam koordinat XY (gambar hanya ilustrasi).", "計算": "Hitung", "角度は +X軸から反時計回り。度（°）で入力。": "Sudut diukur berlawanan arah jarum jam dari sumbu +X. Masukkan dalam derajat (°).", "関数": "Fungsi", "数値": "Nilai", "結果：": "Hasil: ", "sin/cos/tanは角度を度で入力。逆三角関数は度で表示。": "Untuk sin/cos/tan masukkan sudut dalam derajat. Hasil fungsi invers ditampilkan dalam derajat.", "直角三角形・辺の計算": "Perhitungan Sisi Segitiga Siku-siku", "角度はX（水平）と斜辺の間。分かっている辺を選択してください。": "Sudut berada di antara sisi X (horizontal) dan sisi miring. Pilih sisi yang diketahui.", "斜辺": "Sisi miring", "角度": "Sudut", "分かっている辺": "Sisi yang diketahui", "高さ": "Tinggi", "水平": "Horizontal", "辺の長さ": "Panjang sisi", "残りの2辺を計算": "Hitung dua sisi lainnya", "図は説明用で、実寸比率ではありません。入力は四則演算にも対応します。": "Gambar hanya ilustrasi, bukan skala sebenarnya. Kolom mendukung operasi aritmetika.", "ドリル径": "Diameter bor", "先端角": "Sudut ujung", "下図の赤い両矢印部分（ドリルの外周角部から先端までの軸方向の長さ）を計算します。": "Menghitung panjang aksial dari tepi luar bor hingga ujungnya (panah dua arah merah).", "先端高さ": "Tinggi ujung", "模式図（寸法比率は実際と異なります）": "Gambar skematis (tidak sesuai skala)", "径": "diameter", "約": "sekitar", "穴位置計算": "Perhitungan posisi lubang", "穴数": "Jumlah lubang", "開始角度": "Sudut awal", "方向": "Arah", "反時計回り": "Berlawanan arah jarum jam", "時計回り": "Searah jarum jam", "座標を計算": "Hitung koordinat", "破線の円がPCD。穴位置は入力値に応じて変わります。": "Lingkaran putus-putus menunjukkan PCD. Posisi lubang mengikuti nilai input.", "中心をX=0,Y=0、+X軸を0°とします。": "Pusat di X=0, Y=0; sumbu +X adalah 0°.", "切削速度 Vc・回転数 S の換算": "Konversi Kecepatan Potong Vc dan Putaran S", "求めたい項目を選択": "Pilih nilai yang ingin dihitung", "切削速度 Vc から回転数 S を求める": "Hitung putaran S dari kecepatan potong Vc", "回転数 S から切削速度 Vc を逆算する": "Hitung kecepatan potong Vc dari putaran S", "工具径": "Diameter alat", "切削速度": "Kecepatan potong", "回転数": "Putaran", "工具径はmm、切削速度はm/min、回転数はrpmで入力。切削速度は工具・材料に適した条件を別途確認してください。": "Gunakan mm untuk diameter alat, m/min untuk kecepatan potong, dan rpm untuk putaran. Pastikan parameter sesuai alat dan material.", "送り F 計算（工具別）": "Perhitungan Pemakanan F (menurut alat)", "工具の種類を先に選択": "Pilih jenis alat terlebih dahulu", "ドリル（1回転送り）": "Bor (pemakanan per putaran)", "カッタ・エンドミル（1刃送り）": "Cutter/end mill (pemakanan per gigi)", "タップ（ピッチ送り・1条ねじ）": "Tap (pemakanan sesuai pitch, ulir satu awal)", "1回転送り": "Pemakanan per putaran", "刃数": "Jumlah gigi", "実際に切削する刃数": "Jumlah gigi yang benar-benar memotong", "1刃送り": "Pemakanan per gigi", "ねじピッチ": "Pitch ulir", "ドリルは刃数を掛けません。工具条件表の「mm/rev」を入力してください。F = S × f": "Untuk bor, jangan kalikan jumlah gigi. Masukkan mm/rev dari tabel alat. F = S × f", "送り F を計算": "Hitung pemakanan F", "※工具条件表に記載された送りの単位を確認してください。タップは通常の1条ねじの理論送りです。機械のタップサイクル・同期条件は別途確認してください。": "Periksa satuan pemakanan pada tabel alat. Nilai tap adalah teori untuk ulir satu awal; periksa siklus tapping dan sinkronisasi mesin.", "数値欄は四則演算に対応：1331/2、100+25、(100+25)/2 など。掛け算は *、割り算は / を使用できます。": "Kolom angka mendukung aritmetika, misalnya 1331/2, 100+25, (100+25)/2. Gunakan * untuk perkalian dan / untuk pembagian.", "S・F連動調整（加工条件の微調整）": "Penyesuaian S dan F (parameter pemotongan)", "現在のS": "S saat ini", "現在のF": "F saat ini", "現在の1回転送り f = F ÷ S。まずこの値を基準にします。": "Pemakanan per putaran saat ini f = F ÷ S. Nilai ini digunakan sebagai acuan.", "調整モード": "Mode penyesuaian", "1回転送り f を維持（初期設定）": "Pertahankan f per putaran (default)", "1回転送り f も変更する": "Ubah juga f per putaran", "変更する項目": "Parameter yang diubah", "Sを変更 → Fを自動計算": "Ubah S → hitung F otomatis", "Fを変更 → Sを自動計算": "Ubah F → hitung S otomatis", "指定方法": "Metode input", "目標値を直接入力": "Masukkan nilai target", "増減率（基準0％）を入力": "Masukkan persentase perubahan (acuan 0%)", "変更後のS": "S setelah perubahan", "変更後のF": "F setelah perubahan", "現在値を0％として表示。+10で10％増、-20で20％減。": "Nilai saat ini = 0%. +10 berarti naik 10%; -20 berarti turun 20%.", "変更後S": "S baru", "変更後F": "F baru", "S・Fをそれぞれ指定。現在と変更後のfを比較します。": "Tentukan S dan F secara terpisah; bandingkan f sebelum dan sesudah.", "工具の種類（補助表示）": "Jenis alat (informasi tambahan)", "ドリル・一般": "Bor / umum", "カッタ・エンドミル": "Cutter / end mill", "変更後の条件を計算": "Hitung parameter baru", "現在の条件を入力して計算してください": "Masukkan parameter saat ini lalu tekan Hitung", "理論値です。機械・工具・材料の許容範囲、送り・回転数の上限を確認してください。タップの同期送り調整には使用しないでください。": "Nilai teoritis. Periksa batas mesin, alat, material, pemakanan dan putaran. Jangan gunakan untuk mengatur pemakanan tapping sinkron.", "等ピッチ穴位置計算（直線配置）": "Posisi Lubang Berjarak Sama (garis lurus)", "開始穴と終了穴の中心座標、穴数を入力します。両端の穴を含めて等間隔に配置します。": "Masukkan koordinat pusat lubang pertama dan terakhir serta jumlah lubang. Kedua ujung termasuk dalam pembagian jarak sama.", "開始穴": "Lubang awal", "終了穴": "Lubang akhir", "両端を含む": "termasuk kedua ujung", "穴位置を計算": "Hitung posisi lubang", "最終穴": "Lubang terakhir", "等間隔（模式図）": "Jarak sama (skematis)", "X・Yの両方向に対応": "Mendukung arah X dan Y", "数値を入力して計算してください": "Masukkan nilai lalu tekan Hitung", "ピッチ＝始点から終点までの距離÷（穴数－1）。座標は開始穴をNo.1として表示します。図は実際の穴数・方向を表すものではありません。": "Pitch = jarak dari titik awal ke akhir ÷ (jumlah lubang − 1). Lubang awal ditampilkan sebagai No.1. Gambar tidak menunjukkan jumlah atau arah lubang sebenarnya.", "入力を確認してください": "Periksa input Anda", "式を確認してください": "Periksa ekspresi", "括弧を確認してください": "Periksa tanda kurung", "0では割れません": "Tidak dapat dibagi dengan nol", "「計算」を押すと位置を表示します": "Tekan Hitung untuk menampilkan posisi", "この値では計算できません": "Nilai ini tidak dapat dihitung", "工具径と入力値は0より大きくしてください": "Diameter alat dan nilai input harus lebih besar dari 0", "カッタ・エンドミルは「mm/tooth」を入力してください。F = S × z × fz": "Untuk cutter/end mill, masukkan mm/tooth. F = S × z × fz", "通常の1条ねじ：F = S × P。機械のタップサイクル・同期条件は別途確認してください。": "Ulir satu awal: F = S × P. Periksa siklus tapping dan sinkronisasi mesin.", "回転数は0より大きくしてください": "Putaran harus lebih besar dari 0", "1回転送りは0より大きくしてください": "Pemakanan per putaran harus lebih besar dari 0", "刃数は1以上の整数で入力してください": "Jumlah gigi harus bilangan bulat minimal 1", "刃数は1以上の整数にしてください": "Jumlah gigi harus bilangan bulat minimal 1", "1刃送りは0より大きくしてください": "Pemakanan per gigi harus lebih besar dari 0", "ピッチは0より大きくしてください": "Pitch harus lebih besar dari 0", "角度は0°より大きく90°未満で入力してください": "Sudut harus lebih dari 0° dan kurang dari 90°", "辺の長さは0より大きくしてください": "Panjang sisi harus lebih besar dari 0", "穴数は1～360の整数で入力してください": "Jumlah lubang harus bilangan bulat 1–360", "穴数は2～360の整数で入力してください": "Jumlah lubang harus bilangan bulat 2–360", "開始穴と終了穴は異なる位置にしてください": "Lubang awal dan akhir harus berada pada posisi berbeda", "現在のSとFは0より大きくしてください": "S dan F saat ini harus lebih besar dari 0", "変更後の値は0より大きくしてください": "Nilai baru harus lebih besar dari 0", "変更後のSとFを確認してください": "Periksa S dan F yang baru", "増減率（現在値＝0％、減らす場合はマイナス）": "Persentase perubahan (nilai saat ini = 0%; gunakan minus untuk mengurangi)", "変更前": "Sebelum", "変更後": "Sesudah", "穴": "lubang", "開始角": "sudut awal", "赤点がNo.1。": "Titik merah adalah No.1.", "穴番号は下の表で確認してください。": "Lihat nomor lubang pada tabel di bawah.", "破線の円がPCD。": "Lingkaran putus-putus adalah PCD.", "穴位置は入力値に応じて変わります。": "Posisi lubang mengikuti input.", "ピッチ：": "Pitch: ", "穴数：": "Jumlah lubang: ", "ドリル": "Bor", "送り速度": "Laju pemakanan", "送り": "Pemakanan", "計算結果": "Hasil perhitungan", "残りの2辺": "Dua sisi lainnya", "分かっている": "Diketahui", "外周角部": "Tepi luar", "最終": "Terakhir", "現在": "Saat ini", "指定": "Tentukan", "変更": "Perubahan", "増減率": "Persentase perubahan", "基準": "Acuan", "工具": "Alat", "条件": "Parameter", "座標": "Koordinat", "位置": "Posisi", "図": "Gambar", "説明用": "Ilustrasi", "入力": "Input", "結果": "Hasil", "角度は": "Sudut: ", "点": "Titik", "赤点": "Titik merah", "計算してください": "Tekan Hitung", "穴位置": "Posisi lubang", "ピッチ": "Pitch", "開始": "Awal", "終了": "Akhir", "値": "Nilai", "刃数 z（実際に切削する刃数）": "Jumlah gigi z (gigi yang benar-benar memotong)", "ドリル径 φ (mm)": "Diameter bor φ (mm)", "先端高さ：約 ": "Tinggi ujung: sekitar "};
+ const keys=Object.keys(dictionary).sort((a,b)=>b.length-a.length);
+ const pattern=new RegExp(keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+ const originals=new WeakMap();
+ const attrOriginals=new WeakMap();
+ let language='ja', updating=false;
+ function translate(source){return source.replace(pattern,k=>dictionary[k]);}
+ function visit(root){
+   if(root.nodeType===3){
+     if(root.parentElement?.closest('script,style,#app_language'))return;
+     const state=originals.get(root);
+     let old=state?.original;
+     if(!state || root.nodeValue!==state.rendered){old=root.nodeValue;}
+     const next=language==='id'?translate(old):old;
+     originals.set(root,{original:old,rendered:next});
+     if(root.nodeValue!==next)root.nodeValue=next;
+     return;
+   }
+   if(root.nodeType!==1 || root.matches('script,style,#app_language'))return;
+   let state=attrOriginals.get(root)||{};
+   for(const attr of ['aria-label','title'])if(root.hasAttribute(attr)){
+     const current=root.getAttribute(attr), prev=state[attr];
+     const old=prev && current===prev.rendered?prev.original:current;
+     const next=language==='id'?translate(old):old;
+     state[attr]={original:old,rendered:next};
+     if(current!==next)root.setAttribute(attr,next);
+   }
+   attrOriginals.set(root,state);
+   for(const child of Array.from(root.childNodes))visit(child);
+ }
+ const selector=document.getElementById('app_language');
+ try{language=localStorage.getItem('kakou_language')==='id'?'id':'ja'}catch(e){}
+ selector.value=language;
+ function refresh(){updating=true;visit(document.body);document.documentElement.lang=language;document.title=language==='id'?'Kalkulator Pemesinan v1.2':'機械加工計算機 v1.2';updating=false}
+ selector.addEventListener('change',()=>{language=selector.value;try{localStorage.setItem('kakou_language',language)}catch(e){}refresh()});
+ const observer=new MutationObserver(mutations=>{
+   if(updating)return;
+   updating=true;
+   for(const m of mutations){
+     if(m.type==='characterData')visit(m.target);
+     else if(m.type==='childList')for(const n of m.addedNodes)visit(n);
+   }
+   updating=false;
+ });
+ refresh();observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
+</script>
 </body>
 </html>
